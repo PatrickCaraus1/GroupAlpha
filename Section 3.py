@@ -1,11 +1,11 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from pyspark import SparkContext, SparkConf
-
+import time
 import os, sys
 os.environ["JAVA_HOME"] = "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.8.9-hotspot"
-os.environ["PYSPARK_PYTHON"] = sys.executable
-os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
+# os.environ["PYSPARK_PYTHON"] = sys.executable
+# os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
 # ── Spark setup (Core RDD only) ───────────────────────────────────────────────
 conf = SparkConf().setAppName("MovieROIAnalysis").setMaster("local[*]")
@@ -17,6 +17,7 @@ DB_URL = "sqlite:///IMDB.db"
 engine = create_engine(DB_URL, echo=False)
 Session = sessionmaker(bind=engine)
 
+Timer = time.perf_counter()
 
 def inspect_db() -> tuple[str, str | None, str | None]:
     """
@@ -170,3 +171,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+Timer = time.perf_counter() - Timer
+
+print(f"Time taken: {Timer:.2f} seconds")
