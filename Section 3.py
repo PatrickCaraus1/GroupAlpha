@@ -3,6 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from pyspark import SparkContext, SparkConf
 import time
 import os, sys
+os.environ["JAVA_HOME"] = "/usr/lib/jvm/java-21-openjdk-amd64"
 # os.environ["JAVA_HOME"] = "C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.8.9-hotspot"
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
