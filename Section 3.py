@@ -7,12 +7,12 @@ import os, sys
 os.environ["PYSPARK_PYTHON"] = sys.executable
 os.environ["PYSPARK_DRIVER_PYTHON"] = sys.executable
 
-# ── Spark setup (Core RDD only) ───────────────────────────────────────────────
+
 conf = SparkConf().setAppName("MovieROIAnalysis").setMaster("local[*]")
 sc = SparkContext(conf=conf)
 sc.setLogLevel("ERROR")
 
-# ── SQLAlchemy setup ──────────────────────────────────────────────────────────
+
 DB_URL = "sqlite:///IMDB.db"
 engine = create_engine(DB_URL, echo=False)
 Session = sessionmaker(bind=engine)
@@ -67,7 +67,7 @@ def analyse_with_rdd(records: list[dict]) -> None:
     total_records = raw_rdd.count()
     print(f"Total records loaded from DB: {total_records:,}")
 
-    # ── Data cleaning ─────────────────────────────────────────────────────────
+
 
 
     clean_rdd = raw_rdd.filter(
@@ -80,13 +80,11 @@ def analyse_with_rdd(records: list[dict]) -> None:
     # print(f"After cleaning   : {clean_count:,}")
     # print(f"Removed          : {removed:,} ({removed / total_records * 100:.1f}%)")
 
-    # ── ROI calculation ───────────────────────────────────────────────────────
+
     roi_rdd = clean_rdd.map(
         lambda r: (r["revenue"] - r["budget"]) / r["budget"]
     ).cache()
 
-    # ── Aggregate stats via a single RDD pass ─────────────────────────────────
-    # Accumulator tuple: (min, max, sum, sum_sq, count)
     stats = roi_rdd.map(
         lambda x: (x, x, x, x * x, 1)
     ).reduce(
@@ -103,14 +101,14 @@ def analyse_with_rdd(records: list[dict]) -> None:
     roi_mean = roi_sum / n
     roi_std  = ((roi_sum_sq / n) - (roi_mean ** 2)) ** 0.5
 
-    # Median via sampling
+
     sorted_sample = sorted(roi_rdd.takeSample(False, min(n, 100_000), seed=42))
     roi_median    = sorted_sample[len(sorted_sample) // 2]
 
     profitable   = roi_rdd.filter(lambda x: x > 0).count()
     unprofitable = n - profitable
 
-    # ── Print results ─────────────────────────────────────────────────────────
+
     print(f"\n{'='*70}")
     print("ROI ANALYSIS")
     print(f"{'='*70}")
