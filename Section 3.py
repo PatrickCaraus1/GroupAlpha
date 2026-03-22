@@ -20,10 +20,7 @@ Session = sessionmaker(bind=engine)
 Timer = time.perf_counter()
 
 def inspect_db() -> tuple[str, str | None, str | None]:
-    """
-    Inspect the existing IMDB.db to discover the movies table name
-    and locate budget / revenue columns.
-    """
+
     with engine.connect() as conn:
         # List all tables
         tables = conn.execute(
@@ -53,7 +50,7 @@ def inspect_db() -> tuple[str, str | None, str | None]:
 
 
 def fetch_records(table_name: str, budget_col: str, revenue_col: str) -> list[dict]:
-    """Fetch only the budget and revenue columns from the existing table."""
+
     with Session() as session:
         result = session.execute(
             text(f'SELECT "{budget_col}", "{revenue_col}" FROM {table_name}')
@@ -62,11 +59,9 @@ def fetch_records(table_name: str, budget_col: str, revenue_col: str) -> list[di
 
 
 def analyse_with_rdd(records: list[dict]) -> None:
-    """All heavy lifting done on Spark RDDs — zero DataFrame / SQL."""
 
-    print(f"\n{'='*70}")
-    print("DATASET OVERVIEW")
-    print(f"{'='*70}")
+
+
 
     raw_rdd = sc.parallelize(records)
     total_records = raw_rdd.count()
