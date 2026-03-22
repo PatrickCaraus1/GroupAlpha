@@ -68,15 +68,7 @@ def analyse_with_rdd(records: list[dict]) -> None:
     print(f"Total records loaded from DB: {total_records:,}")
 
     # ── Data cleaning ─────────────────────────────────────────────────────────
-    # print(f"\n{'='*70}")
-    # print("DATA CLEANING")
-    # print(f"{'='*70}")
-    #
-    # null_budget  = raw_rdd.filter(lambda r: r["budget"]  is None).count()
-    # null_revenue = raw_rdd.filter(lambda r: r["revenue"] is None).count()
-    # print(f"\nNull values:")
-    # print(f"  budget:  {null_budget:,}")
-    # print(f"  revenue: {null_revenue:,}")
+
 
     clean_rdd = raw_rdd.filter(
         lambda r: r["budget"]  is not None and r["budget"]  > 0
