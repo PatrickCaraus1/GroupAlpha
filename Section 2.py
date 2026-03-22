@@ -1,11 +1,26 @@
 import pandas as pd
 import numpy as np
 import time
+import os
+import psutil
 
-Timer = time.perf_counter()
+def start():
+    t = time.perf_counter()
+    return t
+
+def stop(t):
+    print(f"Time taken: {time.perf_counter()-t:.2f} seconds")
+
+def get_memory_mb():
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss / (1024 ** 2)
+print(f"  Memory after load     : {get_memory_mb():.1f} MB")
 
 print("Loading data...")
+load = start()
 df = pd.read_csv('data/IMDB TMDB Movie Metadata Big Dataset (1M).csv')
+stop(load)
+print(f"  Memory after load     : {get_memory_mb():.1f} MB")
 
 print(f"\n{'=' * 70}")
 print("DATASET OVERVIEW")
@@ -47,36 +62,37 @@ if budget_col and revenue_col:
     print(f"  {revenue_col}: {revenue_nulls:,}")
 
     # Clean data
+    clean = start()
     df_clean = df[(df[budget_col] > 0) & (df[revenue_col] > 0)].copy()
-
+    print(f"  Memory after cleaning : {get_memory_mb():.1f} MB")
     removed = len(df) - len(df_clean)
     removal_pct = (removed / len(df)) * 100
 
     print(f"\nOriginal records: {len(df):,}")
     print(f"After cleaning (budget > 0 AND revenue > 0): {len(df_clean):,}")
     print(f"Removed: {removed:,} ({removal_pct:.1f}%)")
-
+    stop(clean)
     print(f"\n{'=' * 70}")
     print("ROI ANALYSIS")
     print(f"{'=' * 70}")
 
     # Calculate ROI
+    Roi = start()
     df_clean['roi'] = (df_clean[revenue_col] - df_clean[budget_col]) / df_clean[budget_col]
-
+    print(f"  Memory after ROI calc : {get_memory_mb():.1f} MB")
     print(f"\nROI Statistics:")
     print(f"  Average ROI: {df_clean['roi'].mean():.4f}")
     print(f"  Median ROI: {df_clean['roi'].median():.4f}")
     print(f"  Min ROI: {df_clean['roi'].min():.4f}")
     print(f"  Max ROI: {df_clean['roi'].max():.4f}")
     print(f"  Std Dev: {df_clean['roi'].std():.4f}")
-
     # Profitable vs unprofitable
     profitable = len(df_clean[df_clean['roi'] > 0])
     unprofitable = len(df_clean[df_clean['roi'] <= 0])
 
     print(f"\nProfitable movies (ROI > 0): {profitable:,} ({profitable / len(df_clean) * 100:.1f}%)")
     print(f"Loss-making movies (ROI <= 0): {unprofitable:,} ({unprofitable / len(df_clean) * 100:.1f}%)")
-
+    stop(Roi)
 print(f"\n{'=' * 70}")
 print("KEY FINDINGS FOR YOUR REPORT")
 print(f"{'=' * 70}")
@@ -99,6 +115,5 @@ Available columns: {list(df.columns)}
 
 print("Done!")
 
-Timer = time.perf_counter() - Timer
 
-print(f"Time taken: {Timer:.2f} seconds")
+
